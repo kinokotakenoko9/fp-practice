@@ -1,0 +1,7 @@
+(library
+ (name Lam)
+ (libraries angstrom)
+ (modules Lam)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (inline_tests))

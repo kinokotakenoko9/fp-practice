@@ -1,0 +1,4 @@
+(env
+ (dev
+  (flags
+   (:standard -alert @deprecated -warn-error -A -w -3-9-32-34-58))))

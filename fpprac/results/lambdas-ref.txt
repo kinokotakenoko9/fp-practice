@@ -1,0 +1,59 @@
+#TRUE (\\a. \\b. a)
+#FALSE (\\a. \\b. b)
+
+#COND (\\i. \\t. \\e. i t e)
+
+#NOT (\\a. a FALSE TRUE)
+#AND (\\a. \\b. a b FALSE)
+#OR (\\a. \\b. a TRUE b)
+
+#PAIR (\\x. \\y. \\f. f x y)
+#FIRST (\\p. p TRUE) #(\\p. p (\\a. \\b. a))
+#SECOND (\\p. p FALSE) #(\\p. p (\\a. \\b. b))
+
+#ISZERO (\\f. f (\\x. FALSE) TRUE) #(\\f. f (\\x. (\\a. \\b. b)) (\\a. \\b. a))
+#SUCC (\\n. (\\f. \\x. f (n f x)))
+#0 (\\f. \\x. x)
+#NEXT (\\p. PAIR (SECOND p) (SUCC (SECOND p))) #(\\p. (\\x. \\y. \\f. f x y) ((\\p. p (\\a. \\b. b)) p) ((\\n. (\\f. \\x. f (n f x))) ((\\p. p (\\a. \\b. b)) p)))
+#PRED (\\n. FIRST (n NEXT (PAIR 0 0))) #(\\n. (\\p. p (\\a. \\b. a)) (n (\\p. (\\x. \\y. \\f. f x y) ((\\p. p (\\a. \\b. b)) p) ((\\n. (\\f. \\x. f (n f x))) ((\\p. p (\\a. \\b. b)) p))) ((\\x. \\y. \\f. f x y) (\\f. \\x. x) (\\f. \\x. x)))) 
+
+#1 (SUCC 0) #((\\n. (\\f. \\x. f (n f x))) (\\f. \\x. x))
+#2 (SUCC 1) #((\\n. (\\f. \\x. f (n f x))) ((\\n. (\\f. \\x. f (n f x))) (\\f. \\x. x)))
+#3 (SUCC 2) #((\\n. (\\f. \\x. f (n f x))) ((\\n. (\\f. \\x. f (n f x))) ((\\n. (\\f. \\x. f (n f x))) (\\f. \\x. x))))
+
+#2 (\\f. \\x. f (f x))
+#3 (\\f. \\x. f (f (f x)))
+#5 (\\f. \\x. f (f (f (f (f x)))))
+
+#ADD (\\m. \\n. (\\f. \\x. m f (n f x)))
+#MUL (\\m. \\n. (\\f. \\x. m (n f) x))
+#SUB (\\m. \\n. n PRED m)
+
+#Y (\\f. (\\x. f (x x)) (\\x. f (x x)))
+#Z (\\f. (\\x. f (\\v. x x v)) (\\x. f (\\v. x x v)))
+#T (\\x. \\y. y (x x y)) (\\x. \\y. y (x x y))
+#FACT Y (\\s. (\\n. COND (ISZERO n) 1 (MUL (n) (s (PRED n)))))
+#FIBB Y (\\s. (\\n. COND (ISZERO (PRED n)) 1 (ADD (s (PRED n)) (s (PRED (PRED n))))))
+
+#FACTrewrote ((\\f. (\\x. f (x x)) (\\x. f (x x))) (\\s. (\\n. (\\i. \\t. \\e. i t e) ((\\f. f (\\x. (\\a. \\b. b)) (\\a. \\b. a)) n) ((\\n. (\\f. \\x. f (n f x))) (\\f. \\x. x)) ((\\m. \\n. (\\f. \\x. m (n f) x)) (n) (s ((\\n. (\\p. p (\\a. \\b. a)) (n (\\p. (\\x. \\y. \\f. f x y) ((\\p. p (\\a. \\b. b)) p) ((\\n. (\\f. \\x. f (n f x))) ((\\p. p (\\a. \\b. b)) p))) ((\\x. \\y. \\f. f x y) (\\f. \\x. x) (\\f. \\x. x))))  n))))))
+
+#FIBBrewrote 
+((\f.\n.(\p.p \x.\y.y) (n f ( (\x.\y.\f.f x y) (\f.\x. f x) (\f.\x.x) ))) (\p. (\x.\y.\f.f x y) ( (\m.\n.\f.\x.(m f (n f x))) ( (\p.p \x.\y.x) p) ((\p.p \x.\y.y) p))( (\p.p \x.\y.x) p)))
+
+
+    ID ≜ λx. x
+    SUCC ≜ λn. λf. λx. f (n f x)
+    ZERO ≜ λf. λx. x
+    ONE ≜ λf. λx. f x
+    PLUS ≜ λm. λn. n SUCC m
+    MULT ≜ λm. λn. m ((λm. λn. n SUCC m) n) (λf. λx. x)
+    PRED ≜ λn. λf. λx. n (λg. λh. h (g f)) (λu. x) (λx. x)
+    SUB ≜ λm. λn. n PRED m
+    TRUE ≜ λa. λb. a
+    FALSE ≜ λa. λb. b
+    IF ≜ λb. λt. λf. b t f
+    Y ≜ λf. (λx. f (x x)) (λx. f (x x))
+    T ≜ (λx. λy. y (x x y)) (λx. λy. y (x x y))
+    Z ≜ λf. (λx. f (λv. x x v)) (λx. f (λv. x x v))
+    ISZERO ≜ λf. f (λx. FALSE) TRUE
+    FACT ≜ λf. λn. IF (ISZERO n) ONE (MULT n (f (PRED n)))

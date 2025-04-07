@@ -1,0 +1,8 @@
+lib: [
+  "_build/install/default/lib/fpprac/META"
+  "_build/install/default/lib/fpprac/dune-package"
+  "_build/install/default/lib/fpprac/opam"
+]
+bin: [
+  "_build/install/default/bin/fpprac"
+]
