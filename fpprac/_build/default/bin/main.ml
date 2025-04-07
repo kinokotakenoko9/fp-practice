@@ -1,6 +1,6 @@
 open Lam
 
-(* let () = run_lambda__small_step {|(\x. \y. x (\x. x y))y SUBS|} *)
+let () = run_lambda__small_step {|(\x. (a x) (b x)) ((\y. y) c)|}
 
 (* cbv
    (\x. (a x) (b x)) ((\y. y) c)
@@ -118,6 +118,10 @@ module MList = struct
 end
 
 let rec bindk x f k =
-  match x with [] -> k [] | h :: t -> bindk t f (fun m -> k (f h :: m))
+  match x with
+  | [] -> k []
+  | h :: t -> bindk t f (fun mapped_t -> k (f h :: mapped_t))
 
-let () = bindk [ 1; 2; 3 ] (fun x -> x * 2) print_list
+let rec bk m f = List.concat (List.map f m)
+
+(* let () = bindk [ 1; 2; 3 ] (fun x -> x * 2) print_list *)
