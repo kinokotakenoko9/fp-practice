@@ -1,6 +1,13 @@
 open Lam
 
-let () = run_lambda__small_step {|(\x. (a x) (b x)) ((\y. y) c)|}
+let () =
+  run_lambda__small_step
+    {|
+ZERO = \f. \x. x;
+SUCC = \n. \f. \x. f (n f x);
+
+(\x. x ) (SUCC ZERO)
+|}
 
 (* cbv
    (\x. (a x) (b x)) ((\y. y) c)

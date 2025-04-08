@@ -1,7 +1,9 @@
-(λ<span style="color:#00f">x2</span>.((a4 <span style="color:#00f">x2</span>) (b3 <span style="color:#00f">x2</span>))) <span style="color:#f00">((λy1.y1) c0)</span> --> 
+(λ<span style="color:#00f">x</span>.<span style="color:#00f">x</span>) <span style="color:#f00">((λn.(λf.(λx.(f ((n f) x))))) (λf.(λx.x)))</span> --> 
 <br/>
-((a4 (λ<span style="color:#00f">y1</span>.<span style="color:#00f">y1</span>) <span style="color:#f00">c0</span>) (b3 ((λy1.y1) c0))) --> 
+(λ<span style="color:#00f">n</span>.(λf.(λx.(f ((<span style="color:#00f">n</span> f) x))))) <span style="color:#f00">(λf.(λx.x))</span> --> 
 <br/>
-((a4 c0) (b3 (λ<span style="color:#00f">y1</span>.<span style="color:#00f">y1</span>) <span style="color:#f00">c0</span>)) --> 
+(λf.(λx.(f ((λ<span style="color:#00f">f</span>.(λx.x)) <span style="color:#f00">f</span> x)))) --> 
 <br/>
-((a4 c0) (b3 c0))
+(λf.(λx.(f (λ<span style="color:#00f">x</span>.<span style="color:#00f">x</span>) <span style="color:#f00">x</span>))) --> 
+<br/>
+(λf.(λx.(f x)))

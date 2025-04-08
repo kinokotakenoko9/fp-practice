@@ -10,7 +10,7 @@ type expression =
 
 (* PRINT *)
 
-let print_expression ?(show_var_id = true) e =
+let print_expression ?(show_var_id = false) e =
   let string_of_e = ref "" in
   let rec helper = function
     | Var v ->
@@ -35,7 +35,7 @@ let print_expression ?(show_var_id = true) e =
 
 let print_highlighted_redex redex_of_e extension_of_redex_e =
   let abs_e, abs_x, app_e = redex_of_e in
-  let show_var_id = true in
+  let show_var_id = false in
   let highlight_expression_color = "#f00" in
   let highlight_var_color = "#00f" in
   let highlight_color_start c = "<span style=\"color:" ^ c ^ "\">" in
@@ -89,8 +89,7 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
   get_string_of_e (-1) e_with_extension;
   print_string !string_of_e
 
-let on_reduction extension_of_e redex_of_e substitution_of_e =
-  let abs_e, abs_x, app_e = redex_of_e in
+let on_reduction extension_of_e redex_of_e =
   print_highlighted_redex redex_of_e extension_of_e;
   print_string " --> \n";
   print_endline "<br/>"
@@ -113,10 +112,9 @@ let chainl1 e op =
   e >>= fun init -> go init
 
 let p_var =
-  ws
-  *> take_while1 (function
-       | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true
-       | _ -> false)
+  ws *> peek_char_fail >>= function
+  | 'a' .. 'z' -> take_while1 (function 'a' .. 'z' -> true | _ -> false)
+  | _ -> fail "not a variable"
 
 let p_abs p_e =
   token "\\" *> p_var >>= fun v ->
@@ -124,15 +122,41 @@ let p_abs p_e =
 
 let p_app p_e = chainl1 p_e (return (fun e1 e2 -> App (e1, e2)))
 
-let p_expression =
-  ( fix @@ fun p_expression ->
-    let term =
-      p_abs p_expression <|> parens p_expression
-      <|> (p_var >>| fun v -> Var { name = v; id = 0 })
-    in
-    let term = p_app term <|> term in
-    term )
-  <* ws
+let p_macro_def p_e =
+  lift2
+    (fun name e -> (name, e))
+    (ws *> take_while1 (function 'A' .. 'Z' -> true | _ -> false))
+    (token "=" *> p_e <* token ";")
+
+let p_macro =
+  ws *> peek_char_fail >>= function
+  | 'A' .. 'Z' -> take_while1 (function 'A' .. 'Z' -> true | _ -> false)
+  | _ -> fail "not a macro"
+
+module StringMap = Map.Make (String)
+
+let p_expression macros =
+  fix @@ fun p_expression ->
+  let term =
+    p_abs p_expression <|> parens p_expression
+    <|> (p_var >>| fun v -> Var { name = v; id = 0 })
+    <|> ( p_macro >>= fun m ->
+          match StringMap.find_opt m macros with
+          | Some e -> return e
+          | None -> fail "idk" )
+  in
+  let term = p_app term <|> term in
+  term
+
+let p_program =
+  let rec collect_macros macros =
+    p_macro_def (p_expression macros)
+    >>= (fun (name, expr) ->
+          let macros = StringMap.add name expr macros in
+          collect_macros macros)
+    <|> return macros
+  in
+  collect_macros StringMap.empty >>= (fun macros -> p_expression macros) <* ws
 
 (* makes all variable unique by adding to each corresponding id. one way of implementing capture-avoiding substitution *)
 let parse_lambda s =
@@ -161,7 +185,7 @@ let parse_lambda s =
     in
     helper [] e
   in
-  match parse_string ~consume:All p_expression s with
+  match parse_string ~consume:All p_program s with
   | Ok e -> annotate e
   | Error msg -> failwith ("Error: Parser. Check your lambda: " ^ msg)
 
@@ -187,7 +211,7 @@ let rec reduce_cbnk current_e k =
       match reduce_cbnk e1 (fun reduced_e1 -> k (App (reduced_e1, e2))) with
       | Abs (x, e) ->
           let s = subst e x e2 in
-          on_reduction k (e, x, e2) s;
+          on_reduction k (e, x, e2);
           raise (OneReduction (k s))
           (* reduce_cbnk s ... *)
           (* dont continue, stop after one redution *)
@@ -210,7 +234,7 @@ let rec reduce_cbvk current_e k =
             reduce_cbvk e2 (fun reduced_e2 -> k (App (Abs (x, e), reduced_e2)))
           in
           let s = subst e x e2' in
-          on_reduction k (e, x, e2') s;
+          on_reduction k (e, x, e2');
           raise (OneReduction (k s))
           (* reduce_cbvk s ... *)
           (* dont continue, stop after one redution *)
@@ -239,7 +263,7 @@ let rec reduce_aok current_e k =
             reduce_aok e2 (fun reduced_e2 -> k (App (Abs (x, e), reduced_e2)))
           in
           let s = subst e x e2' in
-          on_reduction k (e, x, e2') s;
+          on_reduction k (e, x, e2');
           raise (OneReduction (k s))
       (* reduce_aok s ... *)
       (* dont continue, stop after one redution *)
@@ -265,7 +289,7 @@ let rec reduce_nok current_e k =
       match reduce_cbnk e1 (fun reduced_e1 -> k (App (reduced_e1, e2))) with
       | Abs (x, e) ->
           let s = subst e x e2 in
-          on_reduction k (e, x, e2) s;
+          on_reduction k (e, x, e2);
           raise (OneReduction (k s))
       (* reduce_nok s *)
       (* dont continue, stop after one redution *)
