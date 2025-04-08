@@ -10,42 +10,16 @@ type expression =
 
 (* PRINT *)
 
-let print_expression ?(highlight_var_with_id = -1)
-    ?(extension_of_expression = None) ?(show_var_id = true) e =
-  let highlight_expression_color = "#f00" in
-  let highlight_var_color = "#00f" in
-  let highlight_color_start c = "<span style=\"color:" ^ c ^ "\">" in
-  let highlight_color_end = "</span>" in
-  (* highlight expression itself if there is continuation for it *)
-  let highlight_expression = extension_of_expression <> None in
-  let string_of_e =
-    ref
-      (if highlight_expression then
-         highlight_color_start highlight_expression_color
-       else "")
-  in
-  let string_of_e_without_extension = ref "" in
+let print_expression ?(show_var_id = true) e =
+  let string_of_e = ref "" in
   let rec helper = function
     | Var v ->
-        if v.id = -1 then
-          string_of_e := !string_of_e ^ !string_of_e_without_extension
-        else
-          string_of_e :=
-            !string_of_e
-            ^ (if highlight_var_with_id = v.id then
-                 highlight_color_start highlight_var_color
-               else "")
-            ^ v.name
-            ^ (if show_var_id then Int.to_string v.id else "")
-            ^ if highlight_var_with_id = v.id then highlight_color_end else ""
+        string_of_e :=
+          !string_of_e ^ v.name ^ if show_var_id then Int.to_string v.id else ""
     | Abs (v, e) ->
         string_of_e :=
           !string_of_e ^ "(λ"
-          ^ (if highlight_var_with_id = v.id then
-               highlight_color_start highlight_var_color
-             else "")
           ^ (v.name ^ if show_var_id then Int.to_string v.id else "")
-          ^ (if highlight_var_with_id = v.id then highlight_color_end else "")
           ^ ".";
         helper e;
         string_of_e := !string_of_e ^ ")"
@@ -57,29 +31,68 @@ let print_expression ?(highlight_var_with_id = -1)
         string_of_e := !string_of_e ^ ")"
   in
   helper e;
-  match extension_of_expression with
-  | Some extension_of_expression ->
-      let extension_without_expession =
-        extension_of_expression (Var { name = ""; id = -1 })
-      in
-      ();
-      string_of_e_without_extension :=
-        !string_of_e ^ if highlight_expression then highlight_color_end else "";
-      string_of_e := "";
-      helper extension_without_expession;
-      print_string !string_of_e
-  | None ->
-      print_string
-        (!string_of_e ^ if highlight_expression then highlight_color_end else "")
+  print_string !string_of_e
+
+let print_highlighted_redex redex_of_e extension_of_redex_e =
+  let abs_e, abs_x, app_e = redex_of_e in
+  let show_var_id = true in
+  let highlight_expression_color = "#f00" in
+  let highlight_var_color = "#00f" in
+  let highlight_color_start c = "<span style=\"color:" ^ c ^ "\">" in
+  let highlight_color_end = "</span>" in
+  let string_of_redex_abs = ref "" in
+  let string_of_redex_app = ref "" in
+  let string_of_e = ref (highlight_color_start highlight_expression_color) in
+  let get_string_of_e highlight_var_with_id =
+    let rec helper = function
+      | Var v ->
+          if v.id = -1 then
+            string_of_e :=
+              !string_of_e ^ !string_of_redex_abs ^ " " ^ !string_of_redex_app
+          else
+            string_of_e :=
+              !string_of_e
+              ^ (if highlight_var_with_id = v.id then
+                   highlight_color_start highlight_var_color
+                 else "")
+              ^ v.name
+              ^ (if show_var_id then Int.to_string v.id else "")
+              ^ if highlight_var_with_id = v.id then highlight_color_end else ""
+      | Abs (v, e) ->
+          string_of_e :=
+            !string_of_e ^ "(λ"
+            ^ (if highlight_var_with_id = v.id then
+                 highlight_color_start highlight_var_color
+               else "")
+            ^ (v.name ^ if show_var_id then Int.to_string v.id else "")
+            ^ (if highlight_var_with_id = v.id then highlight_color_end else "")
+            ^ ".";
+          helper e;
+          string_of_e := !string_of_e ^ ")"
+      | App (e1, e2) ->
+          string_of_e := !string_of_e ^ "(";
+          helper e1;
+          string_of_e := !string_of_e ^ " ";
+          helper e2;
+          string_of_e := !string_of_e ^ ")"
+    in
+    helper
+  in
+  get_string_of_e (-2) app_e;
+  string_of_e := !string_of_e ^ highlight_color_end;
+  string_of_redex_app := !string_of_e;
+  string_of_e := "";
+  get_string_of_e abs_x.id (Abs (abs_x, abs_e));
+  string_of_redex_abs := !string_of_e;
+  string_of_e := "";
+  let e_with_extension = extension_of_redex_e (Var { name = ""; id = -1 }) in
+  get_string_of_e (-1) e_with_extension;
+  print_string !string_of_e
 
 let on_reduction extension_of_e redex_of_e substitution_of_e =
   let abs_e, abs_x, app_e = redex_of_e in
-  print_expression app_e ~highlight_var_with_id:abs_x.id
-    ~extension_of_expression:
-      (Some (fun k -> extension_of_e (App (Abs (abs_x, abs_e), k))));
+  print_highlighted_redex redex_of_e extension_of_e;
   print_string " --> \n";
-  print_expression substitution_of_e
-    ~extension_of_expression:(Some extension_of_e);
   print_endline "<br/>"
 
 (* PARSE *)
@@ -288,7 +301,4 @@ let reduce (s : strategy) (n : int) (e : expression) =
 (* RUNNING *)
 
 let run_lambda s = print_expression (parse_lambda s)
-
-let run_lambda__small_step s =
-  let _ = reduce NO 10 (parse_lambda s) in
-  ()
+let run_lambda__small_step s = print_expression (reduce NO 10 (parse_lambda s))
