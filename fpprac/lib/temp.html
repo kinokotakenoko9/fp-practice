@@ -1,9 +1,25 @@
-(λ<span style="color:#00f">x</span>.<span style="color:#00f">x</span>) <span style="color:#f00">((λn.(λf.(λx.(f ((n f) x))))) (λf.(λx.x)))</span> --> 
+(λ<span style="color:#00f">a</span>.(λb.<span style="color:#00f">a</span>)) <span style="color:#f00">((λp.(λt.((t (p (λa.(λb.b)))) (p (λa.(λb.a)))))) (((λx.(λy.(λc.((c x) y)))) one) two))</span> --> 
 <br/>
-(λ<span style="color:#00f">n</span>.(λf.(λx.(f ((<span style="color:#00f">n</span> f) x))))) <span style="color:#f00">(λf.(λx.x))</span> --> 
+(λb.(λ<span style="color:#00f">p</span>.(λt.((t (<span style="color:#00f">p</span> (λa.(λb.b)))) (<span style="color:#00f">p</span> (λa.(λb.a)))))) <span style="color:#f00">(((λx.(λy.(λc.((c x) y)))) one) two)</span>) --> 
 <br/>
-(λf.(λx.(f ((λ<span style="color:#00f">f</span>.(λx.x)) <span style="color:#f00">f</span> x)))) --> 
+(λb.(λt.((t (((λ<span style="color:#00f">x</span>.(λy.(λc.((c <span style="color:#00f">x</span>) y)))) <span style="color:#f00">one</span> two) (λa.(λb.b)))) ((((λx.(λy.(λc.((c x) y)))) one) two) (λa.(λb.a)))))) --> 
 <br/>
-(λf.(λx.(f (λ<span style="color:#00f">x</span>.<span style="color:#00f">x</span>) <span style="color:#f00">x</span>))) --> 
+(λb.(λt.((t ((λ<span style="color:#00f">y</span>.(λc.((c one) <span style="color:#00f">y</span>))) <span style="color:#f00">two</span> (λa.(λb.b)))) ((((λx.(λy.(λc.((c x) y)))) one) two) (λa.(λb.a)))))) --> 
 <br/>
-(λf.(λx.(f x)))
+(λb.(λt.((t (λ<span style="color:#00f">c</span>.((<span style="color:#00f">c</span> one) two)) <span style="color:#f00">(λa.(λb.b))</span>) ((((λx.(λy.(λc.((c x) y)))) one) two) (λa.(λb.a)))))) --> 
+<br/>
+(λb.(λt.((t ((λ<span style="color:#00f">a</span>.(λb.b)) <span style="color:#f00">one</span> two)) ((((λx.(λy.(λc.((c x) y)))) one) two) (λa.(λb.a)))))) --> 
+<br/>
+(λb.(λt.((t (λ<span style="color:#00f">b</span>.<span style="color:#00f">b</span>) <span style="color:#f00">two</span>) ((((λx.(λy.(λc.((c x) y)))) one) two) (λa.(λb.a)))))) --> 
+<br/>
+(λb.(λt.((t two) (((λ<span style="color:#00f">x</span>.(λy.(λc.((c <span style="color:#00f">x</span>) y)))) <span style="color:#f00">one</span> two) (λa.(λb.a)))))) --> 
+<br/>
+(λb.(λt.((t two) ((λ<span style="color:#00f">y</span>.(λc.((c one) <span style="color:#00f">y</span>))) <span style="color:#f00">two</span> (λa.(λb.a)))))) --> 
+<br/>
+(λb.(λt.((t two) (λ<span style="color:#00f">c</span>.((<span style="color:#00f">c</span> one) two)) <span style="color:#f00">(λa.(λb.a))</span>))) --> 
+<br/>
+(λb.(λt.((t two) ((λ<span style="color:#00f">a</span>.(λb.<span style="color:#00f">a</span>)) <span style="color:#f00">one</span> two)))) --> 
+<br/>
+(λb.(λt.((t two) (λ<span style="color:#00f">b</span>.one) <span style="color:#f00">two</span>))) --> 
+<br/>
+(λb.(λt.((t two) one)))

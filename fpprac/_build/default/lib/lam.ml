@@ -10,16 +10,19 @@ type expression =
 
 (* PRINT *)
 
-let print_expression ?(show_var_id = false) e =
+let show_var_id = ref false
+
+let print_expression e =
   let string_of_e = ref "" in
   let rec helper = function
     | Var v ->
         string_of_e :=
-          !string_of_e ^ v.name ^ if show_var_id then Int.to_string v.id else ""
+          !string_of_e ^ v.name
+          ^ if !show_var_id then Int.to_string v.id else ""
     | Abs (v, e) ->
         string_of_e :=
           !string_of_e ^ "(λ"
-          ^ (v.name ^ if show_var_id then Int.to_string v.id else "")
+          ^ (v.name ^ if !show_var_id then Int.to_string v.id else "")
           ^ ".";
         helper e;
         string_of_e := !string_of_e ^ ")"
@@ -35,7 +38,6 @@ let print_expression ?(show_var_id = false) e =
 
 let print_highlighted_redex redex_of_e extension_of_redex_e =
   let abs_e, abs_x, app_e = redex_of_e in
-  let show_var_id = false in
   let highlight_expression_color = "#f00" in
   let highlight_var_color = "#00f" in
   let highlight_color_start c = "<span style=\"color:" ^ c ^ "\">" in
@@ -56,7 +58,7 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
                    highlight_color_start highlight_var_color
                  else "")
               ^ v.name
-              ^ (if show_var_id then Int.to_string v.id else "")
+              ^ (if !show_var_id then Int.to_string v.id else "")
               ^ if highlight_var_with_id = v.id then highlight_color_end else ""
       | Abs (v, e) ->
           string_of_e :=
@@ -64,7 +66,7 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
             ^ (if highlight_var_with_id = v.id then
                  highlight_color_start highlight_var_color
                else "")
-            ^ (v.name ^ if show_var_id then Int.to_string v.id else "")
+            ^ (v.name ^ if !show_var_id then Int.to_string v.id else "")
             ^ (if highlight_var_with_id = v.id then highlight_color_end else "")
             ^ ".";
           helper e;
@@ -111,10 +113,7 @@ let chainl1 e op =
   let rec go acc = lift2 (fun f x -> f acc x) op e >>= go <|> return acc in
   e >>= fun init -> go init
 
-let p_var =
-  ws *> peek_char_fail >>= function
-  | 'a' .. 'z' -> take_while1 (function 'a' .. 'z' -> true | _ -> false)
-  | _ -> fail "not a variable"
+let p_var = ws *> take_while1 (function 'a' .. 'z' -> true | _ -> false)
 
 let p_abs p_e =
   token "\\" *> p_var >>= fun v ->
@@ -125,12 +124,13 @@ let p_app p_e = chainl1 p_e (return (fun e1 e2 -> App (e1, e2)))
 let p_macro_def p_e =
   lift2
     (fun name e -> (name, e))
-    (ws *> take_while1 (function 'A' .. 'Z' -> true | _ -> false))
+    (ws *> take_while1 (function 'A' .. 'Z' | '0' .. '9' -> true | _ -> false))
     (token "=" *> p_e <* token ";")
 
 let p_macro =
   ws *> peek_char_fail >>= function
-  | 'A' .. 'Z' -> take_while1 (function 'A' .. 'Z' -> true | _ -> false)
+  | 'A' .. 'Z' | '0' .. '9' ->
+      take_while1 (function 'A' .. 'Z' | '0' .. '9' -> true | _ -> false)
   | _ -> fail "not a macro"
 
 module StringMap = Map.Make (String)
@@ -143,7 +143,7 @@ let p_expression macros =
     <|> ( p_macro >>= fun m ->
           match StringMap.find_opt m macros with
           | Some e -> return e
-          | None -> fail "idk" )
+          | None -> fail ("unknown macros, or in its definition: " ^ m) )
   in
   let term = p_app term <|> term in
   term
@@ -324,5 +324,6 @@ let reduce (s : strategy) (n : int) (e : expression) =
 
 (* RUNNING *)
 
+let _ = show_var_id := false
 let run_lambda s = print_expression (parse_lambda s)
-let run_lambda__small_step s = print_expression (reduce NO 10 (parse_lambda s))
+let run_lambda__small_step s = print_expression (reduce NO 400 (parse_lambda s))

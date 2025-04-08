@@ -3,10 +3,18 @@ open Lam
 let () =
   run_lambda__small_step
     {|
-ZERO = \f. \x. x;
+0 = \f. \x. x;
+1 = \f. \x. f x;
+2 = \f. \x. f (f x);
 SUCC = \n. \f. \x. f (n f x);
+TRUE = \a. \b. a;
+FALSE = \a. \b. b;
+PAIR = \x. \y. \c. c x y;
+FST = TRUE;
+SND = FALSE;
+SWAP = \p. \t. t (p SND) (p FST);
 
-(\x. x ) (SUCC ZERO)
+TRUE (SWAP (PAIR one two))
 |}
 
 (* cbv
