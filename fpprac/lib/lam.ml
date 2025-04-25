@@ -11,6 +11,8 @@ type expression =
 (* PRINT *)
 
 let show_var_id = ref false
+let lambda_stdout = ref ""
+let lambda_stderr = ref ""
 
 let print_expression e =
   let string_of_e = ref "" in
@@ -34,7 +36,8 @@ let print_expression e =
         string_of_e := !string_of_e ^ ")"
   in
   helper e;
-  print_string !string_of_e
+  (* print_string !string_of_e; *)
+  lambda_stdout := !lambda_stdout ^ !string_of_e
 
 let print_highlighted_redex redex_of_e extension_of_redex_e =
   let abs_e, abs_x, app_e = redex_of_e in
@@ -107,12 +110,15 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
   string_of_e := "";
   let e_with_extension = extension_of_redex_e (Var { name = ""; id = -1 }) in
   get_string_of_e (-1) e_with_extension;
-  print_string !string_of_e
+  (* print_string !string_of_e; *)
+  lambda_stdout := !lambda_stdout ^ !string_of_e
 
 let on_reduction extension_of_e redex_of_e =
   print_highlighted_redex redex_of_e extension_of_e;
-  print_string " --> \n";
-  print_endline "<br/>"
+  (* print_string " --> \n"; *)
+  lambda_stdout := !lambda_stdout ^ " --> \n";
+  (* print_endline "<br/>"; *)
+  lambda_stdout := !lambda_stdout ^ "<br/>\n"
 
 (* PARSE *)
 open Angstrom
@@ -220,7 +226,9 @@ let parse_lambda s =
   in
   match parse_string ~consume:All p_program s with
   | Ok e -> annotate e
-  | Error msg -> failwith ("Error: Parser. Check your lambda: " ^ msg)
+  | Error msg ->
+      lambda_stderr := "Error: Parser. Check your lambda: " ^ msg;
+      Var { name = ""; id = 0 }
 
 (* REDUCE *)
 
@@ -360,5 +368,14 @@ let reduce (s : strategy) (n : int) (e : expression) =
 let _ = show_var_id := false
 let run_lambda s = print_expression (parse_lambda s)
 
-let run_lambda__small_step ss s =
-  print_expression (reduce ss 7000 (parse_lambda s))
+let get_lambda__small_step ss s n =
+  lambda_stdout := "";
+  print_expression (reduce ss n (parse_lambda s));
+  if !lambda_stderr <> "" then (
+    let res = !lambda_stderr in
+    lambda_stderr := "";
+    res)
+  else !lambda_stdout
+
+let run_lambda__small_step ss s n =
+  print_endline (get_lambda__small_step ss s n)
