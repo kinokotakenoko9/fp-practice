@@ -1,5 +1,5 @@
 (library
- (name Lam)
+ (name lam)
  (libraries angstrom)
  (modules Lam)
  (preprocess

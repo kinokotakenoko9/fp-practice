@@ -1,4 +1,7 @@
 (executable
  (public_name fpprac)
  (name main)
- (libraries Lam))
+ (modes byte js)
+ (libraries lam js_of_ocaml)
+ (preprocess
+  (pps js_of_ocaml-ppx)))

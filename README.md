@@ -2,22 +2,16 @@
 
 ulc interpreter
 
-## run
+## build
 
 ```
 cd fpprac
 ```
 
 ```
-dune exec bin/main.exe > results/temp.html
+dune build ./bin/main.bc.js
 ```
 
-open `fpprac/results/temp.html`
-
-## config
-
-in `fpprac/bin/main.ml`
-
-## examples
-
-`fpprac/results`
+```
+sudo cp ./_build/default/bin/main.bc.js ../frontend/public/js/main.bc.js
+```
