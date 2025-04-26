@@ -23,7 +23,7 @@ let print_expression e =
           ^ if !show_var_id then Int.to_string v.id else ""
     | Abs (v, e) ->
         string_of_e :=
-          !string_of_e ^ "(λ"
+          !string_of_e ^ "(&lambda;"
           ^ (v.name ^ if !show_var_id then Int.to_string v.id else "")
           ^ ".";
         helper e;
@@ -73,7 +73,7 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
               else ""
       | Abs (v, e) ->
           string_of_e :=
-            !string_of_e ^ "(λ"
+            !string_of_e ^ "(&lambda;"
             ^ (if
                  highlight_var_with_id = v.id & v.id <> previous_captured_var_id
                then highlight_color_start highlight_var_color
@@ -145,7 +145,7 @@ let p_var =
   ws *> peek_char_fail >>= function
   | 'a' .. 'z' ->
       take_while1 (function 'a' .. 'z' | '0' .. '9' -> true | _ -> false)
-  | _ -> fail "not a variable"
+  | _ -> fail ": Invalid variable definition"
 
 let p_abs p_e =
   token "\\" *> p_var >>= fun v ->
@@ -153,14 +153,15 @@ let p_abs p_e =
 
 let p_app p_e = chainl1 p_e (return (fun e1 e2 -> App (e1, e2)))
 
-let p_macro_def p_e =
+let p_macros_def =
   lift2
-    (fun name e -> (name, e))
+    (fun name e_raw -> (name, e_raw))
     (ws
     *> take_while1 (function
          | 'A' .. 'Z' | '0' .. '9' | '_' -> true
          | _ -> false))
-    (token "=" *> p_e <* ws <* token "\n" <* ws_newline)
+    (token "=" *> take_till (fun c -> c = '\n')
+    <* ws <* token "\n" <* ws_newline)
 
 let p_macro =
   ws *> peek_char_fail >>= function
@@ -168,7 +169,7 @@ let p_macro =
       take_while1 (function
         | 'A' .. 'Z' | '0' .. '9' | '_' -> true
         | _ -> false)
-  | _ -> fail "not a macro"
+  | _ -> fail ": Invalid macro definition"
 
 module StringMap = Map.Make (String)
 
@@ -180,21 +181,34 @@ let p_expression macros =
     <|> ( p_macro >>= fun m ->
           match StringMap.find_opt m macros with
           | Some e -> return e
-          | None -> fail ("unknown macros, or in its definition: " ^ m) )
+          | None -> fail ": Unknown macro" )
   in
   let term = p_app term <|> term in
-  term
+  term <* ws_newline
 
 let p_program =
-  let rec collect_macros macros =
-    p_macro_def (p_expression macros)
-    >>= (fun (name, expr) ->
-          let macros = StringMap.add name expr macros in
-          collect_macros macros)
-    <|> return macros
-  in
-  ws_newline *> collect_macros StringMap.empty
-  >>= (fun macros -> ws_newline *> p_expression macros)
+  ws_newline *> many p_macros_def
+  >>= (fun raw_macros ->
+        let macros = ref StringMap.empty in
+        let is_fail = ref (false, "") in
+        List.iter
+          (* key - macro name, value - string of macro definition *)
+            (fun (name, expr_raw) ->
+            let macro_expr =
+              match
+                parse_string ~consume:All (p_expression !macros) expr_raw
+              with
+              | Ok e -> Some e
+              | Error msg ->
+                  if fst !is_fail then () else is_fail := (true, msg);
+                  None
+            in
+            match macro_expr with
+            | Some macro_expr -> macros := StringMap.add name macro_expr !macros
+            | None -> ())
+          raw_macros;
+        (* last lambda expr *)
+        if fst !is_fail then fail (snd !is_fail) else p_expression !macros)
   <* ws_newline
 
 (* makes all variable unique by adding to each corresponding id. one way of implementing capture-avoiding substitution *)
@@ -227,7 +241,7 @@ let parse_lambda s =
   match parse_string ~consume:All p_program s with
   | Ok e -> annotate e
   | Error msg ->
-      lambda_stderr := "Error: Parser. Check your lambda: " ^ msg;
+      lambda_stderr := "Error" ^ msg;
       Var { name = ""; id = 0 }
 
 (* REDUCE *)
@@ -368,8 +382,9 @@ let reduce (s : strategy) (n : int) (e : expression) =
 let _ = show_var_id := false
 let run_lambda s = print_expression (parse_lambda s)
 
-let get_lambda__small_step ss s n =
+let get_lambda__small_step ss s n svi =
   lambda_stdout := "";
+  show_var_id := svi;
   print_expression (reduce ss n (parse_lambda s));
   if !lambda_stderr <> "" then (
     let res = !lambda_stderr in
@@ -377,5 +392,5 @@ let get_lambda__small_step ss s n =
     res)
   else !lambda_stdout
 
-let run_lambda__small_step ss s n =
-  print_endline (get_lambda__small_step ss s n)
+let run_lambda__small_step ss s n svi =
+  print_endline (get_lambda__small_step ss s n svi)
