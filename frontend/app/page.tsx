@@ -51,8 +51,8 @@ export default function Home() {
   }, [input, maxReductions, showVarIds, strategy]);
 
   return (
-    <div className="items-center justify-items-center min-h-screen p-2 pb-16 gap-16 sm:p-2 font-[family-name:var(--font-geist-sans)]">
-      <div className="flex flex-col sm:flex-row gap-4 p-4">
+    <div className="min-h-screen flex flex-col p-4 sm:p-4 font-[family-name:var(--font-geist-sans)]">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 min-w-0">
           <CodeMirror
             value={input}
@@ -63,9 +63,8 @@ export default function Home() {
             extensions={[basicSetup, StreamLanguage.define(haskell)]}
           />
         </div>
-
         <div className="flex flex-col gap-6 p-4 border rounded-sm min-w-max">
-          {/* Show Variable IDs */}
+          {/* Settings Content */}
           <div className="flex items-center space-x-2">
             <Checkbox
               checked={showVarIds}
@@ -73,8 +72,6 @@ export default function Home() {
             />
             <Label>Show variable IDs</Label>
           </div>
-
-          {/* Max Reductions */}
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="reductions">Max reductions</Label>
             <Input
@@ -89,9 +86,9 @@ export default function Home() {
               className="border rounded px-2 py-1 w-full"
             />
           </div>
-
-          {/* Strategy Selection */}
-          <div className="w-2/3 space-y-3">
+          <div className="w-full sm:w-auto space-y-3">
+            {" "}
+            {/* Adjusted width for settings */}
             <Label>Evaluation strategy</Label>
             <RadioGroup
               defaultValue="AO"
@@ -99,19 +96,21 @@ export default function Home() {
                 setStrategy(val);
               }}
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 whitespace-nowrap">
+                {" "}
+                {/* Prevent wrapping */}
                 <RadioGroupItem value="AO" id="r1" />
                 <Label htmlFor="r1">Applicative Order</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 whitespace-nowrap">
                 <RadioGroupItem value="NO" id="r2" />
                 <Label htmlFor="r2">Normal Order</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 whitespace-nowrap">
                 <RadioGroupItem value="CBV" id="r3" />
                 <Label htmlFor="r3">Call-by-Value</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 whitespace-nowrap">
                 <RadioGroupItem value="CBN" id="r4" />
                 <Label htmlFor="r4">Call-by-Name</Label>
               </div>
@@ -121,8 +120,8 @@ export default function Home() {
       </div>
 
       <div
+        className="lambda-output mt-8 p-4 border rounded-sm bg-gray-50 text-sm font-mono text-gray-800 overflow-auto w-full"
         dangerouslySetInnerHTML={{ __html: lambda }}
-        className="lambda-output m-4 p-4 border rounded-sm bg-gray-50 text-sm font-mono text-gray-800"
       ></div>
     </div>
   );
