@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// @ts-expect-error fine
-import lam from "../public/js/main.bc.js";
 import CodeMirror from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/language";
 import { basicSetup } from "codemirror";
@@ -21,13 +19,35 @@ export default function Home() {
   const [strategy, setStrategy] = useState("AO");
 
   useEffect(() => {
-    let res;
-    const mr = maxReductions || 0;
-    if (strategy === "AO") res = lam.get_ao(input, mr, showVarIds);
-    else if (strategy === "NO") res = lam.get_no(input, mr, showVarIds);
-    else if (strategy === "CBN") res = lam.get_cbn(input, mr, showVarIds);
-    else if (strategy === "CBV") res = lam.get_cbv(input, mr, showVarIds);
-    setLambda(res);
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input,
+            maxReductions,
+            showVarIds,
+            strategy,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setLambda(data.result);
+        } else {
+          console.error("Error processing lambda:", response.status);
+          setLambda("Error during processing.");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setLambda("Error during processing.");
+      }
+    };
+
+    fetchData();
   }, [input, maxReductions, showVarIds, strategy]);
 
   return (
