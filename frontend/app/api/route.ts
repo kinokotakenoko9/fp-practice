@@ -8,17 +8,17 @@ export async function POST(req: NextRequest) {
     let result;
     const mr = maxReductions || 0;
 
-    // @ts-expect-error fine
     if (strategy === "AO")
+      // @ts-expect-error fine
       result = lam.get_ao(input, mr, showVarIds, showDeltaReduction);
-    // @ts-expect-error fine
     else if (strategy === "NO")
+      // @ts-expect-error fine
       result = lam.get_no(input, mr, showVarIds, showDeltaReduction);
-    // @ts-expect-error fine
     else if (strategy === "CBN")
+      // @ts-expect-error fine
       result = lam.get_cbn(input, mr, showVarIds, showDeltaReduction);
-    // @ts-expect-error fine
     else if (strategy === "CBV")
+      // @ts-expect-error fine
       result = lam.get_cbv(input, mr, showVarIds, showDeltaReduction);
 
     return NextResponse.json({ result });
