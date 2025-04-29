@@ -124,18 +124,26 @@
   font-weight: normal;
 }
 
-/* Variables to substitute to (blue) */
-.lambda-output span[style*="#00f"] {
-  color: #3b82f6; /* Tailwind blue-500 */
-  background-color: #dbeafe; /* Tailwind blue-100 */
-  border-radius: 0.25rem; /* rounded */
+/* Variables to substitute to (oof - blue) */
+.lambda-output .ulc-term-oof {
+  color: #1d4ed8; /* Tailwind blue-700 */
+  background-color: #eff6ff; /* Tailwind blue-100 */
+  border-radius: 0.25rem;
   padding: 0 0.15em;
 }
 
-/* Redexes (red) */
-.lambda-output span[style*="#f00"] {
-  color: #ef4444; /* Tailwind red-500 */
-  background-color: #fee2e2; /* Tailwind red-100 */
+/* Redexes (foo - red) */
+.lambda-output .ulc-term-foo {
+  color: #b91c1c; /* Tailwind red-700 */
+  background-color: #fef2f2; /* Tailwind red-100 */
+  border-radius: 0.25rem;
+  padding: 0 0.15em;
+}
+
+/* Delta reductions (ffo - yellow) */
+.lambda-output .ulc-term-ffo {
+  color: #d97706; /* Tailwind yellow-700 */
+  background-color: #fefce8; /* Tailwind yellow-50 */
   border-radius: 0.25rem;
   padding: 0 0.15em;
 }
