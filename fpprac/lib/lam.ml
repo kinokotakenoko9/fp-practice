@@ -328,7 +328,7 @@ let rec reduce_cbnk current_e k =
           (* dont continue, stop after one redution *)
       | e1' -> App (e1', e2))
   | Macro m ->
-      on_delta_reduction k m;
+      on_delta_reduction k (Macro { name = m.name; def = m.def });
       reduce_cbnk m.def k
 
 let reduce_cbn original_e =
@@ -358,7 +358,7 @@ let rec reduce_cbvk current_e k =
           in
           App (e1', e2'))
   | Macro m ->
-      on_delta_reduction k m;
+      on_delta_reduction k (Macro { name = m.name; def = m.def });
       reduce_cbvk m.def k
 
 let reduce_cbv original_e =
@@ -390,7 +390,7 @@ let rec reduce_aok current_e k =
           in
           App (e1', e2'))
   | Macro m ->
-      on_delta_reduction k m;
+      on_delta_reduction k (Macro { name = m.name; def = m.def });
       reduce_aok m.def k
 
 let reduce_ao original_e =
@@ -422,7 +422,7 @@ let rec reduce_nok current_e k =
           in
           App (e1'', e2'))
   | Macro m ->
-      on_delta_reduction k m;
+      on_delta_reduction k (Macro { name = m.name; def = m.def });
       reduce_nok m.def k
 
 let reduce_no original_e =
