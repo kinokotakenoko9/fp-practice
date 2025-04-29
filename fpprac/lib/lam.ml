@@ -47,9 +47,9 @@ let print_expression e =
 
 let print_highlighted_redex redex_of_e extension_of_redex_e =
   let abs_e, abs_x, app_e = redex_of_e in
-  let highlight_expression_color = "#f00" in
-  let highlight_var_color = "#00f" in
-  let highlight_color_start c = "<span style=\"color:" ^ c ^ "\">" in
+  let highlight_expression_color = "foo" in
+  let highlight_var_color = "oof" in
+  let highlight_color_start c = "<span class=\"ulc-term-" ^ c ^ "\">" in
   let highlight_color_end = "</span>" in
   let string_of_redex_abs = ref "" in
   let string_of_redex_app = ref "" in
@@ -121,8 +121,8 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
   lambda_stdout := !lambda_stdout ^ !string_of_e
 
 let print_highlighted_macro macro_of_e extension_of_macro_e =
-  let highlight_macro_color = "#ff0" in
-  let highlight_color_start c = "<span style=\"color:" ^ c ^ "\">" in
+  let highlight_macro_color = "ffo" in
+  let highlight_color_start c = "<span class=\"ulc-term-" ^ c ^ "\">" in
   let highlight_color_end = "</span>" in
   let string_of_macro = ref "" in
   let string_of_e = ref (highlight_color_start highlight_macro_color) in
