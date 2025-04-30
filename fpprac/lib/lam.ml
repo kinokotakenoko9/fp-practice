@@ -47,8 +47,8 @@ let print_expression e =
 
 let print_highlighted_redex redex_of_e extension_of_redex_e =
   let abs_e, abs_x, app_e = redex_of_e in
-  let highlight_expression_color = "foo" in
-  let highlight_var_color = "oof" in
+  let highlight_expression_color = "expr" in
+  let highlight_var_color = "var" in
   let highlight_color_start c = "<span class=\"ulc-term-" ^ c ^ "\">" in
   let highlight_color_end = "</span>" in
   let string_of_redex_abs = ref "" in
@@ -121,7 +121,7 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
   lambda_stdout := !lambda_stdout ^ !string_of_e
 
 let print_highlighted_macro macro_of_e extension_of_macro_e =
-  let highlight_macro_color = "ffo" in
+  let highlight_macro_color = "macro" in
   let highlight_color_start c = "<span class=\"ulc-term-" ^ c ^ "\">" in
   let highlight_color_end = "</span>" in
   let string_of_macro = ref "" in
@@ -308,9 +308,11 @@ let rec subst e (x : variable) v =
   | Var y -> if y.id = x.id then v else e
   | Abs (y, e1) -> if y.id = x.id then Abs (y, e1) else Abs (y, subst e1 x v)
   | App (e1, e2) -> App (subst e1 x v, subst e2 x v)
-  | Macro m -> subst m.def x v
+  | Macro m -> Macro { name = m.name; def = subst m.def x v }
 
 exception OneReduction of expression
+
+type reduced = SomeReduction of expression | NoneReduction of expression
 
 (* rules: https://www.itu.dk/~sestoft/papers/sestoft-lamreduce.pdf *)
 
@@ -333,9 +335,9 @@ let rec reduce_cbnk current_e k =
 
 let reduce_cbn original_e =
   try
-    let _ = reduce_cbnk original_e Fun.id in
-    None
-  with OneReduction next_e -> Some next_e
+    let last_e = reduce_cbnk original_e Fun.id in
+    NoneReduction last_e
+  with OneReduction next_e -> SomeReduction next_e
 
 let rec reduce_cbvk current_e k =
   match current_e with
@@ -363,9 +365,9 @@ let rec reduce_cbvk current_e k =
 
 let reduce_cbv original_e =
   try
-    let _ = reduce_cbvk original_e Fun.id in
-    None
-  with OneReduction next_e -> Some next_e
+    let last_e = reduce_cbvk original_e Fun.id in
+    NoneReduction last_e
+  with OneReduction next_e -> SomeReduction next_e
 
 let rec reduce_aok current_e k =
   match current_e with
@@ -395,9 +397,9 @@ let rec reduce_aok current_e k =
 
 let reduce_ao original_e =
   try
-    let _ = reduce_aok original_e Fun.id in
-    None
-  with OneReduction next_e -> Some next_e
+    let last_e = reduce_aok original_e Fun.id in
+    NoneReduction last_e
+  with OneReduction next_e -> SomeReduction next_e
 
 let rec reduce_nok current_e k =
   match current_e with
@@ -427,16 +429,16 @@ let rec reduce_nok current_e k =
 
 let reduce_no original_e =
   try
-    let _ = reduce_nok original_e Fun.id in
-    None
-  with OneReduction next_e -> Some next_e
+    let last_e = reduce_nok original_e Fun.id in
+    NoneReduction last_e
+  with OneReduction next_e -> SomeReduction next_e
 
 let rec loop_reduce reduction_function e n =
   if n <= 0 then e
   else
     match reduction_function e with
-    | Some next_e -> loop_reduce reduction_function next_e (n - 1)
-    | None -> e
+    | SomeReduction next_e -> loop_reduce reduction_function next_e (n - 1)
+    | NoneReduction last_e -> last_e
 
 let reduce (s : strategy) (n : int) (e : expression) =
   match s with
