@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CodeMirror, { oneDark } from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/language";
 import { basicSetup } from "codemirror";
@@ -12,9 +12,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import macros from "./config";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
+import { CheckIcon, Link, Moon, Sun } from "lucide-react";
 
 const LOCAL_STORAGE_KEY = "lambdaEditorMacros";
+const getURL = (str: string) =>
+  `https://fp-practice.vercel.app?lam=${btoa(str)}`;
 
 export default function Home() {
   const [input, setInput] = useState<string>(macros);
@@ -25,12 +27,21 @@ export default function Home() {
   const [strategy, setStrategy] = useState("AO");
   const { theme, setTheme } = useTheme();
   const [isClient, setIsClient] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   useEffect(() => {
+    const search = window.location.search;
+    const urlParams = new URLSearchParams(search);
+    const lamValue = urlParams.get("lam");
+    if (lamValue) {
+      setInput(atob(lamValue));
+      return;
+    }
+
     const storedMacros = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedMacros !== null) {
       setInput(storedMacros);
@@ -38,8 +49,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, input);
-  }, [input]);
+    if (isClient) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, input);
+    }
+  }, [input, isClient]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,8 +84,26 @@ export default function Home() {
       }
     };
 
-    fetchData();
-  }, [input, maxReductions, showVarIds, showDeltaReduction, strategy]);
+    if (isClient) fetchData();
+  }, [
+    input,
+    maxReductions,
+    showVarIds,
+    showDeltaReduction,
+    strategy,
+    isClient,
+  ]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (hasCopied) setHasCopied(false);
+    }, 2000);
+  }, [hasCopied]);
+
+  const copyToClipboard = useCallback((val: string) => {
+    navigator.clipboard.writeText(`${getURL(val)}`);
+    setHasCopied(true);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -164,11 +195,27 @@ export default function Home() {
           <Button
             onClick={() => {
               setInput(macros);
-              localStorage.setItem(LOCAL_STORAGE_KEY, macros);
             }}
             style={{ width: "fit-content" }}
           >
             Reset Macros
+          </Button>
+          <Button
+            variant="secondary"
+            style={{ width: "fit-content" }}
+            onClick={() => {
+              copyToClipboard(input);
+            }}
+          >
+            {hasCopied ? (
+              <>
+                <CheckIcon /> Copy link
+              </>
+            ) : (
+              <>
+                <Link /> Copy link
+              </>
+            )}
           </Button>
           <Button onClick={toggleTheme} variant="outline" size="icon">
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
