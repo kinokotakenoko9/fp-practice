@@ -131,6 +131,10 @@
   border-radius: 0.25rem;
   padding: 0 0.15em;
 }
+.dark .lambda-output .ulc-term-var {
+  color: var(--color-blue-200); 
+  background-color: var(--color-blue-800); 
+}
 
 /* Redexes */
 .lambda-output .ulc-term-expr {
@@ -139,6 +143,10 @@
   border-radius: 0.25rem;
   padding: 0 0.15em;
 }
+.dark .lambda-output .ulc-term-expr {
+  color: var(--color-red-200); 
+  background-color: var(--color-red-900);
+}
 
 /* Delta reductions */
 .lambda-output .ulc-term-macro {
@@ -146,4 +154,8 @@
   background-color: var(--color-emerald-200);
   border-radius: 0.25rem;
   padding: 0 0.15em;
+}
+.dark .lambda-output .ulc-term-macro {
+  color: var(--color-emerald-200); 
+  background-color: var(--color-emerald-800); 
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { oneDark } from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/language";
 import { basicSetup } from "codemirror";
 import { haskell } from "@codemirror/legacy-modes/mode/haskell";
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import macros from "./config";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
 
 const LOCAL_STORAGE_KEY = "lambdaEditorMacros";
 
@@ -21,6 +23,12 @@ export default function Home() {
   const [showDeltaReduction, setShowDeltaReduction] = useState(true);
   const [maxReductions, setMaxReductions] = useState(10);
   const [strategy, setStrategy] = useState("AO");
+  const { theme, setTheme } = useTheme();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const storedMacros = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -66,18 +74,33 @@ export default function Home() {
     fetchData();
   }, [input, maxReductions, showVarIds, showDeltaReduction, strategy]);
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
     <div className="min-h-screen flex flex-col p-4 sm:p-4 font-[family-name:var(--font-geist-sans)]">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 min-w-0">
-          <CodeMirror
-            value={input}
-            height="400px"
-            onChange={(val) => {
-              setInput(val);
-            }}
-            extensions={[basicSetup, StreamLanguage.define(haskell)]}
-          />
+          {isClient ? (
+            <CodeMirror
+              value={input}
+              height="500px"
+              onChange={(val) => {
+                setInput(val);
+              }}
+              extensions={[basicSetup, StreamLanguage.define(haskell)]}
+              theme={
+                theme === "dark" ||
+                (theme === "system" &&
+                  window.matchMedia("(prefers-color-scheme: dark)").matches)
+                  ? oneDark
+                  : undefined
+              }
+            />
+          ) : (
+            <div style={{ height: "500px" }}></div>
+          )}
         </div>
         <div className="flex flex-col gap-6 p-4 border rounded-sm min-w-max">
           {/* Settings Content */}
@@ -147,11 +170,15 @@ export default function Home() {
           >
             Reset Macros
           </Button>
+          <Button onClick={toggleTheme} variant="outline" size="icon">
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </Button>
         </div>
       </div>
 
       <div
-        className="lambda-output mt-8 p-4 border rounded-sm bg-gray-50 text-sm font-mono text-gray-800 overflow-auto w-full"
+        className="lambda-output mt-8 p-4 border rounded-sm bg-gray-50 dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 overflow-auto w-full"
         dangerouslySetInnerHTML={{ __html: lambda }}
       ></div>
     </div>
