@@ -17,15 +17,6 @@ OR = \\p. \\q. p TRUE q
 NOT = \\p. p FALSE TRUE
 IF = \\c. \\t. \\e. c t e
 
-IS_ZERO = \\n. n (\\x. FALSE) TRUE
-IS_EVEN = \\n. (n NOT) TRUE
-IS_ODD = \\n. (n NOT) FALSE
-
-PAIR = \\x. \\y. \\p. p x y
-FST = \\p. p TRUE
-SND = \\p. p FALSE
-SWAP = \\p. PAIR (SND p) (FST p)
-
 SUCC = \\n. \\f. \\x. f (n f x)
 PRED = \\n. \\f. \\x. n (\\g. \\h. h (g f)) (\\u. x) (\\u. u)
 ADD = \\m. \\n. \\f. \\x. m f (n f x)
@@ -33,9 +24,26 @@ SUB = \\m. \\n. n PRED m
 MUL = \\m. \\n. \\f. m (n f)
 POW = \\b. \\e. e b
 
+IS_ZERO = \\n. n (\\x. FALSE) TRUE
+IS_EVEN = \\n. (n NOT) TRUE
+IS_ODD = \\n. (n NOT) FALSE
+LEQ = \\m. \\n. IS_ZERO (SUB m n)
+
+PAIR = \\x. \\y. \\p. p x y
+FST = \\p. p TRUE
+SND = \\p. p FALSE
+SWAP = \\p. PAIR (SND p) (FST p)
+
 Y = \\f. (\\x. f (x x)) (\\x. f (x x))
 Z = \\f. (\\x. f (\\v. x x v)) (\\x. f (\\v. x x v))
-THETA = (\\x. \\y. y (x x y)) (\\x. \\y. y (x x y))
+
+I = \\x. x
+S = \\x. \\y. \\z. x z (y z)
+K = \\x. \\y. x
+
+B = \\x. \\y. \\z. x (y z)
+C = \\x. \\y. \\z. x z y
+W = \\x. \\y. x y y
 
 FACT_REC = Z (\\fact. \\n. IF (IS_ZERO n) 1 (MUL n (fact (PRED n))))
 FACT = (\\fact. \\n. SND (n fact (PAIR n 1))) (\\p. PAIR (PRED (FST p)) (MUL (SND p) (FST p)))
@@ -44,12 +52,13 @@ FIB_REC = Z (\\fib. \\n. IF (IS_ZERO n) 0 (IF (IS_ZERO (PRED n)) 1 (ADD (fib (PR
 FIB = (\\fib. \\n. SND (n fib (PAIR 1 0))) (\\p. PAIR (ADD (FST p) (SND p)) (FST p))
 
 CONS = \\h. \\t. PAIR h t
-NIL = FALSE 
+NIL = \\x. TRUE
 HEAD = FST
 TAIL = SND
-IS_NIL = NOT
+IS_EMPTY = \\l. l (\\h. \\t. FALSE) 
 
 ADD 1 1 
+
 `;
 
 export default macros;

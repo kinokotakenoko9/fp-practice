@@ -120,13 +120,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+.lambda-output {
+  background-color: var(--sidebar);
+}
+
 .lambda-output span {
   font-weight: normal;
 }
 
 /* Variables to substitute to */
 .lambda-output .ulc-term-var {
-  color: var(--color-blue-800);
+  color: var(--color-blue-900);
   background-color: var(--color-blue-200); 
   border-radius: 0.25rem;
   padding: 0 0.15em;
@@ -138,7 +143,7 @@
 
 /* Redexes */
 .lambda-output .ulc-term-expr {
-  color: var(--color-red-800); 
+  color: var(--color-red-900); 
   background-color: var(--color-red-200);
   border-radius: 0.25rem;
   padding: 0 0.15em;
@@ -150,7 +155,7 @@
 
 /* Delta reductions */
 .lambda-output .ulc-term-macro {
-  color: var(--color-emerald-800); 
+  color: var(--color-emerald-900); 
   background-color: var(--color-emerald-200);
   border-radius: 0.25rem;
   padding: 0 0.15em;

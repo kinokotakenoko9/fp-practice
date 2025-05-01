@@ -23,6 +23,7 @@ export default function Home() {
   const [lambda, setLambda] = useState<string>("");
   const [showVarIds, setShowVarIds] = useState(false);
   const [showDeltaReduction, setShowDeltaReduction] = useState(true);
+  const [showMinimalParens, setShowMinimalParens] = useState(true);
   const [maxReductions, setMaxReductions] = useState(10);
   const [strategy, setStrategy] = useState("AO");
   const { theme, setTheme } = useTheme();
@@ -67,6 +68,7 @@ export default function Home() {
             maxReductions,
             showVarIds,
             showDeltaReduction,
+            showMinimalParens,
             strategy,
           }),
         });
@@ -90,6 +92,7 @@ export default function Home() {
     maxReductions,
     showVarIds,
     showDeltaReduction,
+    showMinimalParens,
     strategy,
     isClient,
   ]);
@@ -110,7 +113,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4 sm:p-4 font-[family-name:var(--font-geist-sans)]">
+    <div className="min-h-screen flex flex-col p-4 sm:p-4 font-sans">
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 min-w-0">
           {isClient ? (
@@ -149,6 +152,13 @@ export default function Home() {
                 onCheckedChange={(val) => setShowDeltaReduction(val as boolean)}
               />
               <Label>Show delta reduction steps</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                checked={showMinimalParens}
+                onCheckedChange={(val) => setShowMinimalParens(val as boolean)}
+              />
+              <Label>Show minimal parentheses</Label>
             </div>
           </div>
           <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -225,7 +235,7 @@ export default function Home() {
       </div>
 
       <div
-        className="lambda-output mt-8 p-4 border rounded-sm bg-gray-50 dark:bg-gray-800 text-sm font-mono text-gray-800 dark:text-gray-200 overflow-auto w-full"
+        className="lambda-output mt-8 p-4 border rounded-sm text-sm font-mono overflow-auto w-full"
         dangerouslySetInnerHTML={{ __html: lambda }}
       ></div>
     </div>
