@@ -59,146 +59,7 @@ let print_expression e =
         string_of_e := !string_of_e ^ if needs_paren then ")" else ""
   in
   helper `None e;
-  (* print_string !string_of_e; *)
   lambda_stdout := !lambda_stdout ^ !string_of_e
-
-(*
-  
-  
-(* Helper function to wrap a string in parentheses if needed *)
-let maybe_paren s condition = if condition then "(" ^ s ^ ")" else s
-
-(* Recursive function to convert the expression to a string *)
-let rec to_string expr parent_context =
-  match expr with
-  | Var v -> v.name ^ if !show_var_id then Int.to_string v.id else ""
-  | Macro m -> m.name
-  | Abs (v, body) ->
-      let needs_paren =
-        match parent_context with
-        | `AppLeft | `AppRight -> true (* Parent is application, need parens *)
-        | `AbsRight | `None -> false (* Parent is abstraction or top-level *)
-      in
-      maybe_paren
-        ("λ"
-        ^ (v.name ^ if !show_var_id then Int.to_string v.id else "")
-        ^ "." ^ to_string body `AbsRight)
-        needs_paren
-  | App (e1, e2) ->
-      let needs_paren =
-        match parent_context with
-        | `AppRight -> true (* Parent is right side of application *)
-        | `AppLeft | `AbsRight | `None -> false
-      in
-      maybe_paren
-        (to_string e1 `AppLeft ^ " " ^ to_string e2 `AppRight)
-        needs_paren
-
-let print_expression (e : expression) =
-  let result = to_string e `None in
-  lambda_stdout := !lambda_stdout ^ result
-  
-  *)
-
-(*
-  
-  
-  let print_highlighted_redex redex_of_e extension_of_redex_e =
-  let abs_e, abs_x, app_e = redex_of_e in
-  let highlight_expression_color = "expr" in
-  let highlight_var_color = "var" in
-  let highlight_color_start c = "<span class=\"ulc-term-" ^ c ^ "\">" in
-  let highlight_color_end = "</span>" in
-  let string_of_redex_abs = ref "" in
-  let string_of_redex_app = ref "" in
-  let string_of_e = ref (highlight_color_start highlight_expression_color) in
-  let get_string_of_e highlight_var_with_id =
-    let rec helper ?(previous_captured_var_id = -3)
-        ?(previous_captured_again_var_id = -3) p = function
-      | Var v ->
-          if v.id = -1 then
-            string_of_e :=
-              !string_of_e ^ !string_of_redex_abs ^ " " ^ !string_of_redex_app
-          else
-            string_of_e :=
-              !string_of_e
-              ^ (if
-                   highlight_var_with_id = v.id
-                   & v.id <> previous_captured_again_var_id
-                 then highlight_color_start highlight_var_color
-                 else "")
-              ^ v.name
-              ^ (if !show_var_id then Int.to_string v.id else "")
-              ^
-              if
-                highlight_var_with_id = v.id
-                & v.id <> previous_captured_again_var_id
-              then highlight_color_end
-              else ""
-      | Macro m -> string_of_e := !string_of_e ^ m.name
-      | Abs (v, e) ->
-          let needs_paren =
-            if not !show_minimal_parens then true
-            else
-              match p with
-              | `AppLeft | `AppRight ->
-                  true (* Parent is application, need parens *)
-              | `AbsRight | `None ->
-                  false (* Parent is abstraction or top-level *)
-          in
-          string_of_e :=
-            !string_of_e
-            ^ (if needs_paren then "(" else "")
-            ^ "&lambda;"
-            ^ (if
-                 highlight_var_with_id = v.id & v.id <> previous_captured_var_id
-               then highlight_color_start highlight_var_color
-               else "")
-            ^ (v.name ^ if !show_var_id then Int.to_string v.id else "")
-            ^ (if
-                 highlight_var_with_id = v.id & v.id <> previous_captured_var_id
-               then highlight_color_end
-               else "")
-            ^ ".";
-          helper `AbsRight e
-            ~previous_captured_var_id:
-              (if highlight_var_with_id = v.id then v.id
-               else previous_captured_var_id)
-            ~previous_captured_again_var_id:
-              (if v.id = previous_captured_var_id then v.id
-               else previous_captured_again_var_id);
-          string_of_e := !string_of_e ^ if needs_paren then ")" else ""
-      | App (e1, e2) ->
-          let needs_paren =
-            if not !show_minimal_parens then true
-            else
-              match p with
-              | `AppRight -> true
-              | `AppLeft | `AbsRight | `None -> false
-          in
-          string_of_e := !string_of_e ^ if needs_paren then "(" else "";
-          helper `AppLeft e1 ~previous_captured_var_id
-            ~previous_captured_again_var_id;
-          string_of_e := !string_of_e ^ " ";
-          helper `AppRight e2 ~previous_captured_var_id
-            ~previous_captured_again_var_id;
-          string_of_e := !string_of_e ^ if needs_paren then ")" else ""
-    in
-    helper
-  in
-  get_string_of_e (-2) app_e;
-  string_of_e := !string_of_e ^ highlight_color_end;
-  string_of_redex_app := !string_of_e;
-  string_of_e := "";
-  get_string_of_e abs_x.id (Abs (abs_x, abs_e));
-  string_of_redex_abs := !string_of_e;
-  string_of_e := "";
-  let e_with_extension = extension_of_redex_e (Var { name = ""; id = -1 }) in
-  get_string_of_e (-1) e_with_extension;
-  (* print_string !string_of_e; *)
-  lambda_stdout := !lambda_stdout ^ !string_of_e
-
-  *)
 
 let print_highlighted_redex redex_of_e extension_of_redex_e =
   let abs_e, abs_x, app_e = redex_of_e in
@@ -300,7 +161,6 @@ let print_highlighted_redex redex_of_e extension_of_redex_e =
   string_of_e := "";
   let e_with_extension = extension_of_redex_e (Var { name = ""; id = -1 }) in
   get_string_of_e (-1) `None e_with_extension;
-  (* print_string !string_of_e; *)
   lambda_stdout := !lambda_stdout ^ !string_of_e
 
 let print_highlighted_macro macro_of_e extension_of_macro_e =
@@ -352,21 +212,16 @@ let print_highlighted_macro macro_of_e extension_of_macro_e =
   string_of_macro := !string_of_e;
   string_of_e := "";
   helper `None (extension_of_macro_e (Var { name = ""; id = -1 }));
-  (* print_string !string_of_e; *)
   lambda_stdout := !lambda_stdout ^ !string_of_e
 
 let on_delta_reduction extension_of_e macro_of_e =
   print_highlighted_macro macro_of_e extension_of_e;
-  (* print_string " --> \n"; *)
   lambda_stdout := !lambda_stdout ^ " == \n";
-  (* print_endline "<br/>"; *)
   lambda_stdout := !lambda_stdout ^ "<br/>\n"
 
 let on_reduction extension_of_e redex_of_e =
   print_highlighted_redex redex_of_e extension_of_e;
-  (* print_string " --> \n"; *)
   lambda_stdout := !lambda_stdout ^ " --> \n";
-  (* print_endline "<br/>"; *)
   lambda_stdout := !lambda_stdout ^ "<br/>\n"
 
 (* PARSE *)
