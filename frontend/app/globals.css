@@ -127,14 +127,14 @@
 
 .lambda-output span {
   font-weight: normal;
+  padding: 0 0.15em;
+  border-radius: 0.25rem;
 }
 
 /* Variables to substitute to */
 .lambda-output .ulc-term-var {
   color: var(--color-blue-900);
   background-color: var(--color-blue-200); 
-  border-radius: 0.25rem;
-  padding: 0 0.15em;
 }
 .dark .lambda-output .ulc-term-var {
   color: var(--color-blue-200); 
@@ -145,8 +145,6 @@
 .lambda-output .ulc-term-expr {
   color: var(--color-red-900); 
   background-color: var(--color-red-200);
-  border-radius: 0.25rem;
-  padding: 0 0.15em;
 }
 .dark .lambda-output .ulc-term-expr {
   color: var(--color-red-200); 
@@ -157,8 +155,6 @@
 .lambda-output .ulc-term-macro {
   color: var(--color-emerald-900); 
   background-color: var(--color-emerald-200);
-  border-radius: 0.25rem;
-  padding: 0 0.15em;
 }
 .dark .lambda-output .ulc-term-macro {
   color: var(--color-emerald-200); 

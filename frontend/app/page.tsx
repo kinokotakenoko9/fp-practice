@@ -235,7 +235,7 @@ export default function Home() {
       </div>
 
       <div
-        className="lambda-output mt-8 p-4 border rounded-sm text-sm font-mono overflow-auto w-full"
+        className="lambda-output mt-8 p-4 border font-mono rounded-sm overflow-auto w-full"
         dangerouslySetInnerHTML={{ __html: lambda }}
       ></div>
     </div>
